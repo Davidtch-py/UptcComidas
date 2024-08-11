@@ -146,7 +146,7 @@ async function main() {
 
         bot.sendMessage(
           msg.chat.id,
-          "Hola " + user.user.first_name + ", la comida de almuerzo para " + day + "/" + month + " es: \n\n" +
+          "Hola " + user.user.first_name + ", la comida de almuerzo para " + month + "/" + day + " es: \n\n" +
           comidasAlmuerzo.toString(),
           { parseMode: "html" }
         );
@@ -160,7 +160,7 @@ async function main() {
 
         bot.sendMessage(
           msg.chat.id,
-          "Hola " + user.user.first_name + ", la comida de cena para " + day + "/" + month + " es: \n\n" +
+          "Hola " + user.user.first_name + ", la comida de cena para " + month + "/" + day + " es: \n\n" +
           comidasCena.toString(),
           { parseMode: "html" }
         );
