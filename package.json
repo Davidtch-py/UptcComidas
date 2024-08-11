@@ -1,0 +1,18 @@
+{
+  "name": "uptccomidas",
+  "version": "1.0.0",
+  "description": "Bot Telegram para Comidas",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "David Rodriguez",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "node-fetch": "^2.7.0",
+    "node-schedule": "^2.1.1",
+    "telebot": "^1.4.1"
+  }
+}
