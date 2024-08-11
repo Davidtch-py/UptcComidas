@@ -2,8 +2,10 @@ const telebot = require("telebot");
 const https = require("https");
 const fetch = require("node-fetch");
 const schedule = require("node-schedule");
+const express = require('express');
 require('dotenv').config();
 
+const app = express();
 const agent = new https.Agent({
   rejectUnauthorized: false,
 });
@@ -11,7 +13,6 @@ const agent = new https.Agent({
 const bot = new telebot({
   token: process.env.TELEGRAM_BOT_TOKEN,
 });
-
 
 const urlLogin = "https://servicios2.uptc.edu.co/SiRestauranteBackEnd/login";
 
@@ -45,23 +46,18 @@ async function login(urlLogin, agent) {
 }
 
 async function ApiComida(token, month, day, type) {
-  const url =
-    `https://servicios2.uptc.edu.co/SiRestauranteBackEnd/Menus/menusFechaRestaurante/1/${type}/2024-${month}-${day}`;
+  const url = `https://servicios2.uptc.edu.co/SiRestauranteBackEnd/Menus/menusFechaRestaurante/1/${type}/2024-${month}-${day}`;
   const headers = {
     Accept: "application/json, text/plain, */*",
     "Accept-Encoding": "gzip, deflate, br, zstd",
     "Accept-Language": "es-ES,es;q=0.9,en;q=0.8,zh-TW;q=0.7,zh;q=0.6",
     Authentication: token,
-    Program:
-      "LchYI/jKSgcZTdYZ3VppnZkBx3fTVchhQg6AhruDu1HLXrEv/6NjJCNjlY2jIpUwg1M8ipkosHsNovSQZjaDJg==",
-    UpdateToken:
-      "TsEpyeRh6s1WveQc/2AnPUNVj8KAHu3CilgoZgjxYJeAN187kS2ZysusIOJYjLW8QpCN+bD9lnoPSMKRLguezOeRskCAg4rHBgxdpEsvhSk=",
-    User: "david.rodriguez26",
-    "User-Agent":
-      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, como Gecko) Chrome/127.0.0.0 Safari/537.36",
+    Program: "LchYI/jKSgcZTdYZ3VppnZkBx3fTVchhQg6AhruDu1HLXrEv/6NjJCNjlY2jIpUwg1M8ipkosHsNovSQZjaDJg==",
+    UpdateToken: "TsEpyeRh6s1WveQc/2AnPUNVj8KAHu3CilgoZgjxYJeAN187kS2ZysusIOJYjLW8QpCN+bD9lnoPSMKRLguezOeRskCAg4rHBgxdpEsvhSk=",
+    User: process.env.API_USERNAME,
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, como Gecko) Chrome/127.0.0.0 Safari/537.36",
     Origin: "https://apps1.uptc.edu.co",
-    "Sec-CH-UA":
-      '"Not)A;Brand";v="99", "Google Chrome";v="127", "Chromium";v="127"',
+    "Sec-CH-UA": '"Not)A;Brand";v="99", "Google Chrome";v="127", "Chromium";v="127"',
     "Sec-CH-UA-Mobile": "?0",
     "Sec-CH-UA-Platform": '"Linux"',
     "Sec-Fetch-Dest": "empty",
@@ -181,7 +177,7 @@ async function main() {
           const user = await bot.getChatMember(chatId, chatId);
           const almuerzo = await ApiComida(data.validateToken, month, day, 2);
           const cena = await ApiComida(data.validateToken, month, day, 3);
-          
+
           if (!almuerzo || !almuerzo.detallesMenus) {
             bot.sendMessage(chatId, "No se pudo obtener la información del almuerzo del día.");
           } else {
@@ -220,6 +216,11 @@ async function main() {
     });
 
     bot.start();
+
+    app.listen(process.env.PORT || 3000, () => {
+      console.log(`Server is running on port ${process.env.PORT || 3000}`);
+    });
+
   } catch (error) {
     console.error("Error en el login:", error);
   }
