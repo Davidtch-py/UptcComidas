@@ -167,7 +167,7 @@ async function main() {
       bot.sendMessage(msg.chat.id, "Por favor, usa el formato correcto: /comida MM/DD. Ejemplo: /comida 08/11");
     });
 
-    schedule.scheduleJob({ hour: 10, minute: 0 }, async () => {
+    schedule.scheduleJob({ hour: 15, minute: 0 }, async () => {
       const date = new Date();
       const day = String(date.getDate()).padStart(2, "0");
       const month = String(date.getMonth() + 1).padStart(2, "0");
