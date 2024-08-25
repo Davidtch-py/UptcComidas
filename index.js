@@ -123,8 +123,16 @@ async function main() {
         return;
       }
 
-      const almuerzo = await ApiComida(data.validateToken, month, day, 2);
-      const cena = await ApiComida(data.validateToken, month, day, 3);
+      let almuerzo = await ApiComida(data.validateToken, month, day, 2);
+      let cena = await ApiComida(data.validateToken, month, day, 3);
+      let tries = 0;
+
+      if (almuerzo.error === "Unauthorized" || tries < 2){
+        login(urlLogin, agent);
+        almuerzo = await ApiComida(data.validateToken, month, day, 2);
+        cena = await ApiComida(data.validateToken, month, day, 3);
+        tries++;
+      }
 
       if ((!almuerzo || !almuerzo.detallesMenus) && (!cena || !cena.detallesMenus)) {
         bot.sendMessage(
@@ -175,8 +183,16 @@ async function main() {
       for (let chatId of activeChats) {
         try {
           const user = await bot.getChatMember(chatId, chatId);
-          const almuerzo = await ApiComida(data.validateToken, month, day, 2);
-          const cena = await ApiComida(data.validateToken, month, day, 3);
+          let almuerzo = await ApiComida(data.validateToken, month, day, 2);
+          let cena = await ApiComida(data.validateToken, month, day, 3);
+          let tries = 0;
+
+          if (almuerzo.error === "Unauthorized" || tries < 2){
+            login(urlLogin, agent);
+            almuerzo = await ApiComida(data.validateToken, month, day, 2);
+            cena = await ApiComida(data.validateToken, month, day, 3);
+            tries++;
+          }
 
           if (!almuerzo || !almuerzo.detallesMenus) {
             bot.sendMessage(chatId, "No se pudo obtener la información del almuerzo del día.");
