@@ -44,7 +44,7 @@ async function login() {
     const data = await response.json();
     authToken = data.validateToken; // Guardar el token
     let current = new Date();
-    tokenExpiry = current.setHours(current.getHours) // Añadir 12 horas al tiempo actual
+    tokenExpiry = current.setHours(current.getHours()+12) // Añadir 12 horas al tiempo actual
     console.log("Login exitoso. Token recibido.");
     return authToken;
   } catch (error) {
