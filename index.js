@@ -205,11 +205,8 @@ async function main() {
       const day = String(date.getDate()).padStart(2, "0");
       const month = String(date.getMonth() + 1).padStart(2, "0");
 
-      let almuerzo = ApiComida(month, day, 2);
-      let cena = ApiComida(month, day, 3);
-
       for (let chatId of activeChats) {
-      bot.sendMessage(chatId, `Hola, soy una prueba de notificación programada. Mensaje: ${message}\n\nAlmuerzo: ${almuerzo}\n\nCena: ${cena}`);
+      bot.sendMessage(chatId, `Hola, ${message}`);
       }
     });
 
