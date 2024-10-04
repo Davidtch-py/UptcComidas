@@ -70,15 +70,22 @@ async function ApiComida(month, day, type) {
   const url = `https://servicios2.uptc.edu.co/SiRestauranteBackEnd/Menus/menusFechaRestaurante/1/${type}/2024-${month}-${day}`;
   const headers = {
     Accept: "application/json, text/plain, */*",
-    Authentication: authToken,
+    "Accept-Encoding": "gzip, deflate, br, zstd",
+    "Accept-Language": "es-ES,es;q=0.9,en;q=0.8,zh-TW;q=0.7,zh;q=0.6",
+    Authentication: token,
+    Program: "LchYI/jKSgcZTdYZ3VppnZkBx3fTVchhQg6AhruDu1HLXrEv/6NjJCNjlY2jIpUwg1M8ipkosHsNovSQZjaDJg==",
+    UpdateToken: "TsEpyeRh6s1WveQc/2AnPUNVj8KAHu3CilgoZgjxYJeAN187kS2ZysusIOJYjLW8QpCN+bD9lnoPSMKRLguezOeRskCAg4rHBgxdpEsvhSk=",
+    User: process.env.API_USERNAME,
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, como Gecko) Chrome/127.0.0.0 Safari/537.36",
-    Origin: "https://uptc.edu.co",
-    Referer: "https://uptc.edu.co/",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Accept-Language": "es-ES,es;q=0.9",
-    Connection: "keep-alive",
+    Origin: "https://apps1.uptc.edu.co",
+    "Sec-CH-UA": '"Not)A;Brand";v="99", "Google Chrome";v="127", "Chromium";v="127"',
+    "Sec-CH-UA-Mobile": "?0",
+    "Sec-CH-UA-Platform": '"Linux"',
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-site",
   };
-
+  
   try {
     const response = await fetch(url, {
       method: "GET",
