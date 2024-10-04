@@ -71,7 +71,7 @@ async function ApiComida(month, day, type) {
     Accept: "application/json, text/plain, */*",
     "Accept-Encoding": "gzip, deflate, br, zstd",
     "Accept-Language": "es-ES,es;q=0.9,en;q=0.8,zh-TW;q=0.7,zh;q=0.6",
-    Authentication: data.validateToken,
+    Authentication: authToken,
     Program: "LchYI/jKSgcZTdYZ3VppnZkBx3fTVchhQg6AhruDu1HLXrEv/6NjJCNjlY2jIpUwg1M8ipkosHsNovSQZjaDJg==",
     UpdateToken: "TsEpyeRh6s1WveQc/2AnPUNVj8KAHu3CilgoZgjxYJeAN187kS2ZysusIOJYjLW8QpCN+bD9lnoPSMKRLguezOeRskCAg4rHBgxdpEsvhSk=",
     User: process.env.API_USERNAME,
