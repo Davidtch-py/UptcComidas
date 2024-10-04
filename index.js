@@ -39,7 +39,7 @@ async function login() {
     });
     const data = await response.json();
     authToken = data.validateToken; 
-    tokenExpiry = Date.now() + 60 * 60 * 1000; 
+    tokenExpiry = Date.now() + 1000 * 60 * 60 * 24; 
     console.log("Login exitoso. Token recibido.");
     return authToken;
   } catch (error) {
