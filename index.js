@@ -213,6 +213,19 @@ async function main() {
       }
     });
 
+    bot.on("text", (msg) => {
+      const text = msg.text.trim();
+      if (!text.startsWith("/")) {
+        bot.sendMessage(
+          msg.chat.id,
+          "Comandos disponibles:\n\n" +
+          "/start - Comienza a recibir notificaciones diarias de la comida a las 10 a.m.\n" +
+          "/stop - Deja de recibir notificaciones diarias.\n" +
+          "/comida MM/DD - Consulta la comida para una fecha específica (formato MM/DD).\n" +
+          "/help - Muestra este mensaje de ayuda."
+        );
+      }
+    });
     // Notificación programada diaria
     schedule.scheduleJob({ hour: 10, minute: 0 }, async () => {
       const date = new Date();
