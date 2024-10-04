@@ -16,11 +16,7 @@ const bot = new telebot({
 
 const urlLogin = "https://servicios2.uptc.edu.co/SiRestauranteBackEnd/login";
 
-let authToken = null;
-let tokenExpiry = null;
-
-// Función para realizar el login y obtener el token
-async function login() {
+async function login(urlLogin, agent) {
   const body = {
     user: process.env.API_USERNAME,
     password: process.env.API_PASSWORD,
@@ -42,36 +38,20 @@ async function login() {
       agent: agent,
     });
     const data = await response.json();
-    authToken = data.validateToken; // Guardar el token
-    let current = new Date();
-    tokenExpiry = current.setHours(current.getHours()+12) // Añadir 12 horas al tiempo actual
-    console.log("Login exitoso. Token recibido.");
-    return authToken;
+    return data;
   } catch (error) {
-    console.error("Error en el login:", error);
+    console.error("Error:", error);
     throw error;
   }
 }
 
-// Verifica si el token es válido o lo renueva si ha expirado
-async function ensureValidToken() {
-  if (!authToken || Date.now() >= tokenExpiry) {
-    console.log(tokenExpiry);
-    console.log("Token expirado o no presente. Realizando login...");
-    await login();
-  }
-}
-
-// Función para hacer peticiones a la API con token actualizado
-async function ApiComida(month, day, type) {
-  await ensureValidToken();  // Asegura que el token sea válido antes de cada petición
-
+async function ApiComida(token, month, day, type) {
   const url = `https://servicios2.uptc.edu.co/SiRestauranteBackEnd/Menus/menusFechaRestaurante/1/${type}/2024-${month}-${day}`;
   const headers = {
     Accept: "application/json, text/plain, */*",
     "Accept-Encoding": "gzip, deflate, br, zstd",
     "Accept-Language": "es-ES,es;q=0.9,en;q=0.8,zh-TW;q=0.7,zh;q=0.6",
-    Authentication: authToken,
+    Authentication: token,
     Program: "LchYI/jKSgcZTdYZ3VppnZkBx3fTVchhQg6AhruDu1HLXrEv/6NjJCNjlY2jIpUwg1M8ipkosHsNovSQZjaDJg==",
     UpdateToken: "TsEpyeRh6s1WveQc/2AnPUNVj8KAHu3CilgoZgjxYJeAN187kS2ZysusIOJYjLW8QpCN+bD9lnoPSMKRLguezOeRskCAg4rHBgxdpEsvhSk=",
     User: process.env.API_USERNAME,
@@ -84,22 +64,19 @@ async function ApiComida(month, day, type) {
     "Sec-Fetch-Mode": "cors",
     "Sec-Fetch-Site": "same-site",
   };
-
   try {
     const response = await fetch(url, {
       method: "GET",
       headers: headers,
       agent: agent,
     });
-
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
-
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error en la petición de comida:", error);
+    console.error("Error:", error);
     return null;
   }
 }
@@ -108,7 +85,7 @@ const activeChats = new Set();
 
 async function main() {
   try {
-    await login();  // Realizar login al iniciar el servidor
+    const data = await login(urlLogin, agent);
 
     bot.on("/start", (msg) => {
       activeChats.add(msg.chat.id);
@@ -128,6 +105,10 @@ async function main() {
       );
     });
 
+    bot.on("/angelarpm", (msg) => {
+      bot.sendMessage(msg.chat.id, "Hola Angela, TE AMOOOO 🤖");
+    });
+
     bot.on(/^\/comida (\d{2})\/(\d{2})$/, async (msg, props) => {
       const day = props.match[2];
       const month = props.match[1];
@@ -142,45 +123,50 @@ async function main() {
         return;
       }
 
-      try {
-        let almuerzo = await ApiComida(month, day, 2);
-        let cena = await ApiComida(month, day, 3);
+      let almuerzo = await ApiComida(data.validateToken, month, day, 2);
+      let cena = await ApiComida(data.validateToken, month, day, 3);
+      let tries = 0;
 
-        if ((!almuerzo || !almuerzo.detallesMenus) && (!cena || !cena.detallesMenus)) {
-          bot.sendMessage(
-            msg.chat.id,
-            "No se pudo obtener la información de la comida para la fecha especificada."
-          );
-          return;
-        }
+      if (almuerzo.error === "Unauthorized" || tries < 2){
+        login(urlLogin, agent);
+        almuerzo = await ApiComida(data.validateToken, month, day, 2);
+        cena = await ApiComida(data.validateToken, month, day, 3);
+        tries++;
+      }
 
-        if (almuerzo && almuerzo.detallesMenus) {
-          let comidasAlmuerzo = almuerzo.detallesMenus
-            .map(element => `${element.tiposProducto.nombreTipoProducto}: ${element.descripcionIngrediente}`)
-            .join("\n\n");
-
-          bot.sendMessage(
-            msg.chat.id,
-            `Hola ${user.user.first_name}, la comida de almuerzo para ${month}/${day} es: \n\n${comidasAlmuerzo}`,
-            { parseMode: "html" }
-          );
-        }
-
-        if (cena && cena.detallesMenus) {
-          let comidasCena = cena.detallesMenus
-            .map(element => `${element.tiposProducto.nombreTipoProducto}: ${element.descripcionIngrediente}`)
-            .join("\n\n");
-
-          bot.sendMessage(
-            msg.chat.id,
-            `Hola ${user.user.first_name}, la comida de cena para ${month}/${day} es: \n\n${comidasCena}`,
-            { parseMode: "html" }
-          );
-        }
-      } catch (error) {
+      if ((!almuerzo || !almuerzo.detallesMenus) && (!cena || !cena.detallesMenus)) {
         bot.sendMessage(
           msg.chat.id,
-          "No se pudo obtener la información de la comida. Inténtalo de nuevo más tarde."
+          "No se pudo obtener la información de la comida para la fecha especificada."
+        );
+        return;
+      }
+
+      if (almuerzo && almuerzo.detallesMenus) {
+        let comidasAlmuerzo = [];
+        almuerzo.detallesMenus.forEach((element) => {
+          comidasAlmuerzo += element.tiposProducto.nombreTipoProducto + ': ' + element.descripcionIngrediente + '\n\n';
+        });
+
+        bot.sendMessage(
+          msg.chat.id,
+          "Hola " + user.user.first_name + ", la comida de almuerzo para " + month + "/" + day + " es: \n\n" +
+          comidasAlmuerzo.toString(),
+          { parseMode: "html" }
+        );
+      }
+
+      if (cena && cena.detallesMenus) {
+        let comidasCena = [];
+        cena.detallesMenus.forEach((element) => {
+          comidasCena += element.tiposProducto.nombreTipoProducto + ': ' + element.descripcionIngrediente + '\n\n';
+        });
+
+        bot.sendMessage(
+          msg.chat.id,
+          "Hola " + user.user.first_name + ", la comida de cena para " + month + "/" + day + " es: \n\n" +
+          comidasCena.toString(),
+          { parseMode: "html" }
         );
       }
     });
@@ -189,8 +175,7 @@ async function main() {
       bot.sendMessage(msg.chat.id, "Por favor, usa el formato correcto: /comida MM/DD. Ejemplo: /comida 08/11");
     });
 
-    // Notificación programada diaria
-    schedule.scheduleJob({ hour: 10, minute: 0 }, async () => {
+    schedule.scheduleJob({ hour: 15, minute: 0 }, async () => {
       const date = new Date();
       const day = String(date.getDate()).padStart(2, "0");
       const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -198,19 +183,29 @@ async function main() {
       for (let chatId of activeChats) {
         try {
           const user = await bot.getChatMember(chatId, chatId);
-          let almuerzo = await ApiComida(month, day, 2);
-          let cena = await ApiComida(month, day, 3);
+          let almuerzo = await ApiComida(data.validateToken, month, day, 2);
+          let cena = await ApiComida(data.validateToken, month, day, 3);
+          let tries = 0;
+
+          if (almuerzo.error === "Unauthorized" || tries < 2){
+            login(urlLogin, agent);
+            almuerzo = await ApiComida(data.validateToken, month, day, 2);
+            cena = await ApiComida(data.validateToken, month, day, 3);
+            tries++;
+          }
 
           if (!almuerzo || !almuerzo.detallesMenus) {
             bot.sendMessage(chatId, "No se pudo obtener la información del almuerzo del día.");
           } else {
-            let comidasAlmuerzo = almuerzo.detallesMenus
-              .map(element => `${element.tiposProducto.nombreTipoProducto}: ${element.descripcionIngrediente}`)
-              .join("\n\n");
+            let comidasAlmuerzo = [];
+            almuerzo.detallesMenus.forEach((element) => {
+              comidasAlmuerzo += element.tiposProducto.nombreTipoProducto + ': ' + element.descripcionIngrediente + '\n\n';
+            });
 
             bot.sendMessage(
               chatId,
-              `Hola ${user.user.first_name}, la comida de almuerzo de hoy es: \n\n${comidasAlmuerzo}`,
+              "Hola " + user.user.first_name + ", la comida de almuerzo de hoy es: \n\n" +
+              comidasAlmuerzo.toString(),
               { parseMode: "html" }
             );
           }
@@ -218,18 +213,20 @@ async function main() {
           if (!cena || !cena.detallesMenus) {
             bot.sendMessage(chatId, "No se pudo obtener la información de la cena del día.");
           } else {
-            let comidasCena = cena.detallesMenus
-              .map(element => `${element.tiposProducto.nombreTipoProducto}: ${element.descripcionIngrediente}`)
-              .join("\n\n");
+            let comidasCena = [];
+            cena.detallesMenus.forEach((element) => {
+              comidasCena += element.tiposProducto.nombreTipoProducto + ': ' + element.descripcionIngrediente + '\n\n';
+            });
 
             bot.sendMessage(
               chatId,
-              `Hola ${user.user.first_name}, la comida de cena de hoy es: \n\n${comidasCena}`,
+              "Hola " + user.user.first_name + ", la comida de cena de hoy es: \n\n" +
+              comidasCena.toString(),
               { parseMode: "html" }
             );
           }
         } catch (error) {
-          console.error("Error enviando notificación:", error);
+          console.error("Error sending message:", error);
         }
       }
     });
@@ -237,11 +234,11 @@ async function main() {
     bot.start();
 
     app.listen(process.env.PORT || 3000, () => {
-      console.log(`Servidor en funcionamiento en el puerto ${process.env.PORT || 3000}`);
+      console.log(`Server is running on port ${process.env.PORT || 3000}`);
     });
 
   } catch (error) {
-    console.error("Error general:", error);
+    console.error("Error en el login:", error);
   }
 }
 
