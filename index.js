@@ -46,7 +46,7 @@ async function login() {
     });
     const data = await response.json();
     authToken = data.validateToken; // Guardar el token
-    tokenExpiry = Date.now() + 60 * 60 * 1000; // Definir la expiración (1 hora)
+    tokenExpiry = Date.now() + 12 * 60 * 60 * 1000; // Añadir 12 horas al tiempo actual
     console.log("Login exitoso. Token recibido.");
     return authToken;
   } catch (error) {
@@ -58,6 +58,7 @@ async function login() {
 // Verifica si el token es válido o lo renueva si ha expirado
 async function ensureValidToken() {
   if (!authToken || Date.now() >= tokenExpiry) {
+    console.log(tokenExpiry);
     console.log("Token expirado o no presente. Realizando login...");
     await login();
   }
@@ -85,7 +86,7 @@ async function ApiComida(month, day, type) {
     "Sec-Fetch-Mode": "cors",
     "Sec-Fetch-Site": "same-site",
   };
-  
+
   try {
     const response = await fetch(url, {
       method: "GET",
