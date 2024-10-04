@@ -29,12 +29,9 @@ async function login() {
   const headersLogin = {
     Accept: "application/json",
     "Content-Type": "application/json",
-    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, como Gecko) Chrome/127.0.0.0 Safari/537.36",
-    Origin: "https://uptc.edu.co",
-    Referer: "https://uptc.edu.co/",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Accept-Language": "es-ES,es;q=0.9",
-    Connection: "keep-alive",
+    "Accept-Encoding": "gzip, deflate, br, zstd",
+    "User-Agent":
+      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, como Gecko) Chrome/",
   };
 
   try {
@@ -46,7 +43,8 @@ async function login() {
     });
     const data = await response.json();
     authToken = data.validateToken; // Guardar el token
-    tokenExpiry = Date.now() + 12 * 60 * 60 * 1000; // Añadir 12 horas al tiempo actual
+    let current = new Date();
+    tokenExpiry = current.setHours(current.getHours()+12) // Añadir 12 horas al tiempo actual
     console.log("Login exitoso. Token recibido.");
     return authToken;
   } catch (error) {
@@ -73,7 +71,7 @@ async function ApiComida(month, day, type) {
     Accept: "application/json, text/plain, */*",
     "Accept-Encoding": "gzip, deflate, br, zstd",
     "Accept-Language": "es-ES,es;q=0.9,en;q=0.8,zh-TW;q=0.7,zh;q=0.6",
-    Authentication: token,
+    Authentication: data.validateToken,
     Program: "LchYI/jKSgcZTdYZ3VppnZkBx3fTVchhQg6AhruDu1HLXrEv/6NjJCNjlY2jIpUwg1M8ipkosHsNovSQZjaDJg==",
     UpdateToken: "TsEpyeRh6s1WveQc/2AnPUNVj8KAHu3CilgoZgjxYJeAN187kS2ZysusIOJYjLW8QpCN+bD9lnoPSMKRLguezOeRskCAg4rHBgxdpEsvhSk=",
     User: process.env.API_USERNAME,
