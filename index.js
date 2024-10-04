@@ -97,7 +97,6 @@ async function ApiComida(month, day, type) {
     }
 
     const data = await response.json();
-    console.log("Petición de comida exitosa."+ data);
     return data;
   } catch (error) {
     console.error("Error en la petición de comida:", error);
@@ -124,6 +123,7 @@ async function main() {
         msg.chat.id,
         "Comandos disponibles:\n\n" +
         "/start - Comienza a recibir notificaciones diarias de la comida a las 10 a.m.\n" +
+        "/stop - Deja de recibir notificaciones diarias.\n" +
         "/comida MM/DD - Consulta la comida para una fecha específica (formato MM/DD).\n" +
         "/help - Muestra este mensaje de ayuda."
       );
@@ -186,8 +186,31 @@ async function main() {
       }
     });
 
+    bot.on("/angelarpm", (msg) => {
+      bot.sendMessage(msg.chat.id, "Hola Angela, TE AMOOOO 🤖");
+    });
+
     bot.on(/^\/comida$/, (msg) => {
       bot.sendMessage(msg.chat.id, "Por favor, usa el formato correcto: /comida MM/DD. Ejemplo: /comida 08/11");
+    });
+
+    bot.on("/stop", (msg) => {
+      activeChats.delete(msg.chat.id);
+      bot.sendMessage(msg.chat.id, "No recibirás más notificaciones diarias. 🤖");
+    });
+
+    bot.on(/^\/pruebaSchedule (.+)$/, (msg, props) => {
+      const message = props.match[1];
+      const date = new Date();
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+
+      let almuerzo = ApiComida(month, day, 2);
+      let cena = ApiComida(month, day, 3);
+
+      for (let chatId of activeChats) {
+      bot.sendMessage(chatId, `Hola, soy una prueba de notificación programada. Mensaje: ${message}\n\nAlmuerzo: ${almuerzo}\n\nCena: ${cena}`);
+      }
     });
 
     // Notificación programada diaria
