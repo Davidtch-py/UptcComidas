@@ -180,7 +180,7 @@ async function main() {
       } catch (error) {
         bot.sendMessage(
           msg.chat.id,
-          "No se pudo obtener la información de la comida. Inténtalo de nuevo más tarde." + error
+          `No se pudo obtener la información de la comida. Inténtalo de nuevo más tarde. ${error}`,
         );
       }
     });
