@@ -19,6 +19,7 @@ const urlLogin = "https://servicios2.uptc.edu.co/SiRestauranteBackEnd/login";
 let authToken = null;
 let tokenExpiry = null;
 
+// Función para realizar el login y obtener el token
 async function login() {
   const body = {
     user: process.env.API_USERNAME,
@@ -28,6 +29,12 @@ async function login() {
   const headersLogin = {
     Accept: "application/json",
     "Content-Type": "application/json",
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, como Gecko) Chrome/127.0.0.0 Safari/537.36",
+    Origin: "https://uptc.edu.co",
+    Referer: "https://uptc.edu.co/",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "es-ES,es;q=0.9",
+    Connection: "keep-alive",
   };
 
   try {
@@ -38,8 +45,8 @@ async function login() {
       agent: agent,
     });
     const data = await response.json();
-    authToken = data.validateToken; 
-    tokenExpiry = Date.now() + 1000 * 60 * 60 * 24; 
+    authToken = data.validateToken; // Guardar el token
+    tokenExpiry = Date.now() + 60 * 60 * 1000; // Definir la expiración (1 hora)
     console.log("Login exitoso. Token recibido.");
     return authToken;
   } catch (error) {
@@ -48,7 +55,7 @@ async function login() {
   }
 }
 
-
+// Verifica si el token es válido o lo renueva si ha expirado
 async function ensureValidToken() {
   if (!authToken || Date.now() >= tokenExpiry) {
     console.log("Token expirado o no presente. Realizando login...");
@@ -56,15 +63,20 @@ async function ensureValidToken() {
   }
 }
 
-
+// Función para hacer peticiones a la API con token actualizado
 async function ApiComida(month, day, type) {
-  await ensureValidToken();  
+  await ensureValidToken();  // Asegura que el token sea válido antes de cada petición
 
   const url = `https://servicios2.uptc.edu.co/SiRestauranteBackEnd/Menus/menusFechaRestaurante/1/${type}/2024-${month}-${day}`;
   const headers = {
     Accept: "application/json, text/plain, */*",
     Authentication: authToken,
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, como Gecko) Chrome/127.0.0.0 Safari/537.36",
+    Origin: "https://uptc.edu.co",
+    Referer: "https://uptc.edu.co/",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "es-ES,es;q=0.9",
+    Connection: "keep-alive",
   };
 
   try {
@@ -90,7 +102,7 @@ const activeChats = new Set();
 
 async function main() {
   try {
-    await login();  
+    await login();  // Realizar login al iniciar el servidor
 
     bot.on("/start", (msg) => {
       activeChats.add(msg.chat.id);
