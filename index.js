@@ -97,6 +97,7 @@ async function ApiComida(month, day, type) {
     }
 
     const data = await response.json();
+    console.log("Petición de comida exitosa."+ data);
     return data;
   } catch (error) {
     console.error("Error en la petición de comida:", error);
