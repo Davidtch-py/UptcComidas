@@ -44,7 +44,7 @@ async function login() {
     const data = await response.json();
     authToken = data.validateToken; // Guardar el token
     let current = new Date();
-    tokenExpiry = current.setHours(current.getHours()+12) // Añadir 12 horas al tiempo actual
+    tokenExpiry = current.setHours(current.getHours()+6) // Añadir 12 horas al tiempo actual
     console.log("Login exitoso. Token recibido.");
     return authToken;
   } catch (error) {
@@ -224,7 +224,7 @@ async function main() {
       }
     });
     // Notificación programada diaria
-    schedule.scheduleJob({ hour: 10, minute: 0 }, async () => {
+    schedule.scheduleJob({ hour: 15, minute: 0 }, async () => {
       const date = new Date();
       const day = String(date.getDate()).padStart(2, "0");
       const month = String(date.getMonth() + 1).padStart(2, "0");
