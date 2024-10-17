@@ -224,7 +224,7 @@ async function main() {
       }
     });
     // Notificación programada diaria
-    schedule.scheduleJob({ hour: 15, minute: 0 }, async () => {
+    schedule.scheduleJob('0 15 * * *', async () => {
       const date = new Date();
       const day = String(date.getDate()).padStart(2, "0");
       const month = String(date.getMonth() + 1).padStart(2, "0");
